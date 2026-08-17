@@ -1,20 +1,33 @@
 (()=>{
   'use strict';
-  const VERSION='listened-badge-v1';
+  const VERSION='listened-badge-v2';
 
   const css=document.createElement('style');
   css.textContent=`
     .listenedBadgeV1{
-      position:absolute;top:9px;right:9px;z-index:6;
-      display:inline-flex;align-items:center;gap:5px;
-      padding:5px 8px;border-radius:999px;
-      border:1px solid rgba(157,226,195,.48);
-      background:rgba(8,18,16,.88);color:#a9efd0;
-      font-size:.72rem;font-weight:800;line-height:1;
-      box-shadow:0 4px 12px rgba(0,0,0,.28);
-      backdrop-filter:blur(5px);pointer-events:none
+      position:absolute;top:10px;left:10px;right:auto;z-index:10;
+      display:inline-flex;align-items:center;gap:6px;
+      padding:7px 10px;border-radius:999px;
+      border:1px solid rgba(178,255,218,.72);
+      background:rgba(12,111,79,.96);color:#f4fff9;
+      font-size:.75rem;font-weight:950;line-height:1;
+      letter-spacing:.025em;text-transform:uppercase;
+      box-shadow:0 6px 18px rgba(0,0,0,.38),0 0 0 2px rgba(70,211,153,.12);
+      backdrop-filter:blur(6px);pointer-events:none
     }
-    .album.hasListensV1 .cover{border-color:#365f54}
+    .album.hasListensV1{
+      border-color:#2e9b73 !important;
+      box-shadow:0 0 0 1px rgba(61,207,151,.34),0 10px 26px rgba(0,0,0,.24) !important
+    }
+    .album.hasListensV1 .cover{
+      border-color:#49c896 !important;
+      box-shadow:inset 0 0 0 1px rgba(91,226,171,.22)
+    }
+    .listenedDotV2{
+      display:inline-flex;align-items:center;justify-content:center;
+      width:17px;height:17px;border-radius:50%;background:#eafff5;color:#08724d;
+      font-size:.72rem;font-weight:1000
+    }
   `;
   document.head.appendChild(css);
 
@@ -27,7 +40,7 @@
     if(!Array.isArray(notes)||!notes.length)return null;
     const valid=notes.filter(Boolean);
     if(!valid.length)return null;
-    const latest=valid.map(n=>String(n.date||'')).filter(Boolean).sort().reverse()[0]||'';
+    const latest=valid.map(n=>String(n.date||n.createdAt||'')).filter(Boolean).sort().reverse()[0]||'';
     return {count:valid.length,latest};
   }
   function refreshListenedBadgesV1(){
@@ -39,7 +52,7 @@
       const info=listenInfo(card.dataset.id,state);if(!info)return;
       card.classList.add('hasListensV1');
       const badge=document.createElement('span');badge.className='listenedBadgeV1';
-      badge.textContent=`🎧 ${info.count}`;
+      badge.innerHTML=`<span class="listenedDotV2">✓</span><span>Escuchado${info.count>1?' · '+info.count+'×':''}</span>`;
       badge.title=info.count===1?`Escuchado 1 vez${info.latest?' · '+info.latest:''}`:`Escuchado ${info.count} veces${info.latest?' · última: '+info.latest:''}`;
       cover.appendChild(badge);
     });
