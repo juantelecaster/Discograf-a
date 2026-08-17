@@ -1,6 +1,6 @@
 (()=>{
   'use strict';
-  const VERSION='ficha-listening-v5';
+  const VERSION='ficha-listening-v6';
 
   const css=document.createElement('style');
   css.textContent=`
@@ -13,10 +13,21 @@
     const d=new Date(),p=n=>String(n).padStart(2,'0');
     return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
   }
-  function persistV5(){
+  function persistAndVerify(rid,entry){
     localStorage.setItem(PERSONAL_KEY,JSON.stringify(personal));
+    const stored=JSON.parse(localStorage.getItem(PERSONAL_KEY)||'{}')||{};
+    const notes=stored?.[rid]?.notes;
+    if(!Array.isArray(notes))throw new Error('No se ha creado la lista de escuchas');
+    const ok=notes.some(n=>n&&(
+      (entry.id&&n.id===entry.id) ||
+      (n.createdAt===entry.createdAt && String(n.text||'')===String(entry.text||''))
+    ));
+    if(!ok)throw new Error('El navegador no confirmó el guardado del comentario');
+    // Sincronizamos el estado en memoria con lo que realmente quedó persistido.
+    personal=stored;
   }
   function setMsg(root,text,error=false){
+    if(!root)return;
     let msg=root.querySelector('.fichaSaveMsgV5');
     if(!msg){
       msg=document.createElement('span');
@@ -34,8 +45,6 @@
     const date=root.querySelector('#noteDate');
     if(date&&!date.value)date.value=localDateV5();
 
-    // Guardar una escucha desde la propia ficha. El comentario es opcional:
-    // una fecha sola también constituye una entrada válida del diario.
     const btn=root.querySelector('#saveNoteBtn');
     if(btn){
       btn.type='button';
@@ -47,10 +56,23 @@
         try{
           const p=ensurePersonal(r.id);
           if(!Array.isArray(p.notes))p.notes=[];
-          p.notes.push({date:when,text,rating:Number(p.rating)||0,createdAt:new Date().toISOString()});
-          persistV5();
-          const ta=root.querySelector('#noteText');if(ta)ta.value='';
-          setMsg(root,'Escucha guardada ✓');
+          const createdAt=new Date().toISOString();
+          const entry={
+            id:`listen-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
+            date:when,
+            text,
+            rating:Number(p.rating)||0,
+            createdAt
+          };
+          p.notes.push(entry);
+          persistAndVerify(r.id,entry);
+
+          // Volvemos a dibujar la ficha para que el comentario aparezca inmediatamente
+          // en el historial de escuchas del propio disco. Así el guardado es visible,
+          // no solo un cambio silencioso en localStorage.
+          openDetail(r.id);
+          const fresh=document.querySelector(`[data-editor="${r.id}"]`);
+          setMsg(fresh,text?'Comentario guardado ✓':'Escucha guardada ✓');
           try{renderDiary();}catch(e){console.warn('renderDiary',e);}
           try{renderFavorites();}catch(e){console.warn('renderFavorites',e);}
         }catch(e){
@@ -60,15 +82,17 @@
       };
     }
 
-    // También hacemos robusta la valoración de estrellas para que no dependa
-    // de savePersonal(), que vuelve a renderizar otras vistas.
     root.querySelectorAll('.star[data-rate]').forEach(star=>{
       star.onclick=(ev)=>{
         ev.preventDefault();
+        ev.stopPropagation();
         try{
           const p=ensurePersonal(r.id);
           p.rating=Number(star.dataset.rate)||0;
-          persistV5();
+          localStorage.setItem(PERSONAL_KEY,JSON.stringify(personal));
+          const stored=JSON.parse(localStorage.getItem(PERSONAL_KEY)||'{}')||{};
+          if(Number(stored?.[r.id]?.rating)!==Number(p.rating))throw new Error('No se confirmó el guardado');
+          personal=stored;
           root.querySelectorAll('.star[data-rate]').forEach(s=>s.classList.toggle('on',Number(s.dataset.rate)<=p.rating));
           setMsg(root,'Valoración guardada ✓');
         }catch(e){
@@ -85,7 +109,6 @@
     if(r)bindFichaListeningV5(r);
   };
 
-  // Si una ficha ya estaba abierta al cargar este parche, la re-enlazamos.
   const opened=document.querySelector('[data-editor]');
   if(opened){const r=data.find(x=>x.id===opened.dataset.editor);if(r)bindFichaListeningV5(r);}
 
