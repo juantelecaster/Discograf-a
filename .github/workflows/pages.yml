@@ -32,8 +32,8 @@ jobs:
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          scripts = '<script src="patch-v41.js"></script><script src="covers-sort-v2.js"></script>'
-          if 'covers-sort-v2.js' not in s:
+          scripts = '<script src="patch-v41.js"></script><script src="covers-sort-v2.js"></script><script src="diary-curiosity-v3.js"></script>'
+          if 'diary-curiosity-v3.js' not in s:
               s = s.replace('</body>', scripts + '</body>')
           p.write_text(s, encoding='utf-8')
           PY
