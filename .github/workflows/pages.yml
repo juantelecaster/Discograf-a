@@ -25,6 +25,18 @@ jobs:
         uses: actions/checkout@v6
       - name: Configurar Pages
         uses: actions/configure-pages@v5
+      - name: Activar mejoras de la web
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          scripts = '<script src="patch-v41.js"></script><script src="covers-sort-v2.js"></script>'
+          if 'covers-sort-v2.js' not in s:
+              s = s.replace('</body>', scripts + '</body>')
+          p.write_text(s, encoding='utf-8')
+          PY
       - name: Preparar sitio
         uses: actions/upload-pages-artifact@v4
         with:
