@@ -1,6 +1,6 @@
 (()=>{
   'use strict';
-  const VERSION='listening-history-v2';
+  const VERSION='listening-history-v3';
   const view=document.getElementById('assistantView');
   const tab=document.querySelector('.navtab[data-view="assistantView"]');
   if(!view||!tab||!Array.isArray(data))return;
@@ -46,8 +46,8 @@
       const p=typeof ensurePersonal==='function'?ensurePersonal(r.id):(personal?.[r.id]||{});
       (Array.isArray(p?.notes)?p.notes:[]).forEach((n,index)=>out.push({r,n,index}));
     });
-    // Cronología natural: las primeras escuchas arriba y las más recientes al final.
-    out.sort((a,b)=>dateKey(a.n).localeCompare(dateKey(b.n)) || a.index-b.index);
+    // La escucha más reciente aparece primero. Si dos entradas comparten fecha, la añadida más tarde queda antes.
+    out.sort((a,b)=>dateKey(b.n).localeCompare(dateKey(a.n)) || b.index-a.index);
     return out;
   }
   function usable(r){
@@ -58,7 +58,7 @@
   }
   function recommendationPool(evts){
     const listened=new Set(evts.map(x=>x.r.id));
-    const last=evts.length?evts[evts.length-1].r:null;
+    const last=evts.length?evts[0].r:null;
     const lastGenres=genreWords(last);
     const lastYear=yearOf(last?.year);
     const candidates=data.filter(usable).map(r=>{
@@ -93,8 +93,8 @@
   function renderHistory(){
     const evts=entries();
     const unique=new Set(evts.map(x=>x.r.id));
-    const last=evts.length?evts[evts.length-1]:null;
-    view.innerHTML=`<section class="card assistantPanel listenDash"><div><div class="eyebrow">Tu recorrido por la colección</div><h2 style="margin:6px 0">🎧 Discos escuchados</h2><div class="hint">Ordenados desde la escucha más antigua hasta la más reciente. La recomendación se calcula únicamente con los discos de tu propia colección.</div></div><div class="listenStats"><div class="listenStat"><b>${evts.length}</b><span>escuchas registradas</span></div><div class="listenStat"><b>${unique.size}</b><span>discos distintos escuchados</span></div><div class="listenStat"><b>${last?fmtDate(last.n.date):'—'}</b><span>última escucha</span></div></div><div id="nextListenHolder"></div><div><div class="eyebrow">Historial cronológico · antiguo → reciente</div><div id="heardList" class="heardList"></div></div></section>`;
+    const last=evts.length?evts[0]:null;
+    view.innerHTML=`<section class="card assistantPanel listenDash"><div><div class="eyebrow">Tu recorrido por la colección</div><h2 style="margin:6px 0">🎧 Discos escuchados</h2><div class="hint">Ordenados desde la escucha más reciente hasta la más antigua. La recomendación se calcula únicamente con los discos de tu propia colección.</div></div><div class="listenStats"><div class="listenStat"><b>${evts.length}</b><span>escuchas registradas</span></div><div class="listenStat"><b>${unique.size}</b><span>discos distintos escuchados</span></div><div class="listenStat"><b>${last?fmtDate(last.n.date):'—'}</b><span>última escucha</span></div></div><div id="nextListenHolder"></div><div><div class="eyebrow">Historial cronológico · reciente → antiguo</div><div id="heardList" class="heardList"></div></div></section>`;
     renderRecommendation(evts);
     const list=document.getElementById('heardList');
     if(!evts.length){list.innerHTML='<div class="heardEmpty">Todavía no hay escuchas registradas. Cuando añadas una desde la ficha de un disco o desde 📓 Diario, aparecerá aquí.</div>';return;}
