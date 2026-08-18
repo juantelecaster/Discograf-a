@@ -1,6 +1,6 @@
 (()=>{
   'use strict';
-  const VERSION='listening-history-delete-v3';
+  const VERSION='listening-history-delete-v4';
   const view=document.getElementById('assistantView');
   const tab=document.querySelector('.navtab[data-view="assistantView"]');
   if(!view||!tab||!Array.isArray(data))return;
@@ -20,7 +20,7 @@
       const p=typeof ensurePersonal==='function'?ensurePersonal(r.id):(personal?.[r.id]||{});
       (Array.isArray(p?.notes)?p.notes:[]).forEach((n,index)=>out.push({r,n,index}));
     });
-    out.sort((a,b)=>dateKey(a.n).localeCompare(dateKey(b.n)) || a.index-b.index);
+    out.sort((a,b)=>dateKey(b.n).localeCompare(dateKey(a.n)) || b.index-a.index);
     return out;
   }
   function persist(){localStorage.setItem(PERSONAL_KEY,JSON.stringify(personal));}
