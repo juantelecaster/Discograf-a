@@ -1,6 +1,6 @@
 (()=>{
   'use strict';
-  const VERSION='listening-history-v1';
+  const VERSION='listening-history-v2';
   const view=document.getElementById('assistantView');
   const tab=document.querySelector('.navtab[data-view="assistantView"]');
   if(!view||!tab||!Array.isArray(data))return;
@@ -18,10 +18,14 @@
     .nextListenTitle{font-size:1.2rem;font-weight:850;margin:5px 0 2px}.nextListenArtist{color:#a8d9ff;font-weight:750}
     .nextListenReason{margin-top:8px;line-height:1.5;color:#d6decf}.nextListenMeta{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
     .listenToolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.listenToolbar .smallbtn{margin:0}
-    .heardList{display:grid;gap:9px;margin-top:12px}.heardRow{display:grid;grid-template-columns:110px 1fr auto;gap:12px;align-items:start;padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:#0f151f}
+    .heardList{display:grid;gap:9px;margin-top:12px}
+    .heardRow{display:grid;grid-template-columns:68px 110px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 13px;border:1px solid var(--line);border-radius:12px;background:#0f151f}
+    .heardThumb{width:64px!important;height:64px!important;min-height:64px!important;aspect-ratio:1/1!important;border-radius:9px!important;overflow:hidden;cursor:pointer;margin:0!important}
+    .heardThumb img{width:100%!important;height:100%!important;object-fit:cover!important;display:block}
+    .heardThumb .coverOverlay{display:none!important}.heardThumb .coverPlaceholder{min-height:64px!important;height:64px!important;padding:5px!important}.heardThumb .placeholderArtist,.heardThumb .placeholderTitle{font-size:.54rem!important;line-height:1.05!important}
     .heardDate{font-weight:800;color:#ffd37a;white-space:nowrap}.heardAlbum{font-weight:800}.heardArtist{color:#9db8dd;font-size:.86rem;margin-top:2px}.heardComment{margin-top:7px;white-space:pre-wrap;line-height:1.4;color:#dce3ed}.heardMeta{color:var(--muted);font-size:.8rem;margin-top:4px}
     .heardEmpty{padding:18px;border:1px dashed #39485e;border-radius:12px;color:var(--muted)}
-    @media(max-width:720px){.listenStats{grid-template-columns:1fr}.heardRow{grid-template-columns:1fr}.heardRow .smallbtn{justify-self:start}}
+    @media(max-width:720px){.listenStats{grid-template-columns:1fr}.heardRow{grid-template-columns:64px 1fr}.heardRow>.heardDateCol{grid-column:2}.heardRow>.heardMain{grid-column:1/-1}.heardRow>.smallbtn,.heardRow>.heardActionsV2{grid-column:1/-1;justify-self:start}.heardThumb{grid-row:1}}
   `;
   document.head.appendChild(css);
 
@@ -42,7 +46,8 @@
       const p=typeof ensurePersonal==='function'?ensurePersonal(r.id):(personal?.[r.id]||{});
       (Array.isArray(p?.notes)?p.notes:[]).forEach((n,index)=>out.push({r,n,index}));
     });
-    out.sort((a,b)=>dateKey(b.n).localeCompare(dateKey(a.n)));
+    // Cronología natural: las primeras escuchas arriba y las más recientes al final.
+    out.sort((a,b)=>dateKey(a.n).localeCompare(dateKey(b.n)) || a.index-b.index);
     return out;
   }
   function usable(r){
@@ -53,7 +58,7 @@
   }
   function recommendationPool(evts){
     const listened=new Set(evts.map(x=>x.r.id));
-    const last=evts[0]?.r||null;
+    const last=evts.length?evts[evts.length-1].r:null;
     const lastGenres=genreWords(last);
     const lastYear=yearOf(last?.year);
     const candidates=data.filter(usable).map(r=>{
@@ -76,7 +81,7 @@
   function renderRecommendation(evts){
     const holder=document.getElementById('nextListenHolder');if(!holder)return;
     const pool=recommendationPool(evts);
-    if(!pool.length){holder.innerHTML='<div class="heardEmpty">No hay suficientes fichas identificadas para recomendar otra escucha.</div>';return;}
+    if(!pool.length){holder.innerHTML='<div class="heardEmpty">No hay suficientes álbumes identificados para recomendar otra escucha.</div>';return;}
     const pick=pool[recOffset%Math.min(pool.length,12)];const r=pick.r;
     let reason='Una opción sólida para seguir recorriendo tu propia colección.';
     if(pick.reasons.length)reason='Te lo propongo porque '+pick.reasons.slice(0,2).join(' y ')+'.';
@@ -88,13 +93,14 @@
   function renderHistory(){
     const evts=entries();
     const unique=new Set(evts.map(x=>x.r.id));
-    const last=evts[0];
-    view.innerHTML=`<section class="card assistantPanel listenDash"><div><div class="eyebrow">Tu recorrido por la colección</div><h2 style="margin:6px 0">🎧 Discos escuchados</h2><div class="hint">Historial construido a partir de tus entradas del diario. La recomendación se calcula únicamente con los discos de tu propia colección.</div></div><div class="listenStats"><div class="listenStat"><b>${evts.length}</b><span>escuchas registradas</span></div><div class="listenStat"><b>${unique.size}</b><span>discos distintos escuchados</span></div><div class="listenStat"><b>${last?fmtDate(last.n.date):'—'}</b><span>última escucha</span></div></div><div id="nextListenHolder"></div><div><div class="eyebrow">Historial cronológico</div><div id="heardList" class="heardList"></div></div></section>`;
+    const last=evts.length?evts[evts.length-1]:null;
+    view.innerHTML=`<section class="card assistantPanel listenDash"><div><div class="eyebrow">Tu recorrido por la colección</div><h2 style="margin:6px 0">🎧 Discos escuchados</h2><div class="hint">Ordenados desde la escucha más antigua hasta la más reciente. La recomendación se calcula únicamente con los discos de tu propia colección.</div></div><div class="listenStats"><div class="listenStat"><b>${evts.length}</b><span>escuchas registradas</span></div><div class="listenStat"><b>${unique.size}</b><span>discos distintos escuchados</span></div><div class="listenStat"><b>${last?fmtDate(last.n.date):'—'}</b><span>última escucha</span></div></div><div id="nextListenHolder"></div><div><div class="eyebrow">Historial cronológico · antiguo → reciente</div><div id="heardList" class="heardList"></div></div></section>`;
     renderRecommendation(evts);
     const list=document.getElementById('heardList');
     if(!evts.length){list.innerHTML='<div class="heardEmpty">Todavía no hay escuchas registradas. Cuando añadas una desde la ficha de un disco o desde 📓 Diario, aparecerá aquí.</div>';return;}
-    list.innerHTML=evts.map(({r,n})=>`<article class="heardRow"><div><div class="heardDate">${fmtDate(n.date)}</div>${Number(n.rating)?`<div class="heardMeta">${'★'.repeat(Math.max(0,Math.min(5,Number(n.rating))))}</div>`:''}</div><div><div class="heardAlbum">${esc(r.title)}</div><div class="heardArtist">${esc(r.artist)}</div>${String(n.text||'').trim()?`<div class="heardComment">${esc(n.text)}</div>`:'<div class="heardMeta">Sin comentario</div>'}</div><button class="smallbtn" data-open-heard="${esc(r.id)}">Ver disco</button></article>`).join('');
+    list.innerHTML=evts.map(({r,n})=>`<article class="heardRow"><div class="heardThumb cover" data-id="${esc(r.id)}" data-open-heard="${esc(r.id)}" title="${esc(r.artist)} — ${esc(r.title)}"></div><div class="heardDateCol"><div class="heardDate">${fmtDate(n.date)}</div>${Number(n.rating)?`<div class="heardMeta">${'★'.repeat(Math.max(0,Math.min(5,Number(n.rating))))}</div>`:''}</div><div class="heardMain"><div class="heardAlbum">${esc(r.title)}</div><div class="heardArtist">${esc(r.artist)}</div>${String(n.text||'').trim()?`<div class="heardComment">${esc(n.text)}</div>`:'<div class="heardMeta">Sin comentario</div>'}</div><button class="smallbtn" data-open-heard="${esc(r.id)}">Ver disco</button></article>`).join('');
     list.querySelectorAll('[data-open-heard]').forEach(b=>b.onclick=()=>openDetail(b.dataset.openHeard));
+    try{if(typeof hydrateVisibleCovers==='function')hydrateVisibleCovers(list);}catch(e){console.warn('miniaturas',e);}
   }
 
   tab.addEventListener('click',()=>setTimeout(renderHistory,0));
@@ -104,6 +110,7 @@
   }
   window.addEventListener('storage',e=>{if(e.key===PERSONAL_KEY&&view.classList.contains('active'))renderHistory();});
 
+  window.renderListeningHistory=renderHistory;
   renderHistory();
   document.documentElement.dataset.listeningHistory=VERSION;
 })();
