@@ -35,8 +35,8 @@ jobs:
           s = s.replace('<option value="year">Orden: año</option>', '<option value="year_asc">Año: más antiguo primero</option><option value="year_desc">Año: más reciente primero</option>')
           s = s.replace('fichas con identificación alta', 'álbumes bien identificados')
           s = s.replace('fichas que requieren revisión', 'identificación incompleta')
-          scripts = '<script src="patch-v41.js?v=20260818b"></script><script src="covers-sort-v2.js?v=20260818b"></script><script src="diary-curiosity-v3.js?v=20260818b"></script><script src="app-fixes-v4.js?v=20260818b"></script><script src="ficha-listening-v5.js?v=20260818b"></script><script src="listened-badge-v1.js?v=20260818b"></script><script src="listening-history-v1.js?v=20260818b"></script><script src="catalog-enrichment-v1.js?v=20260818b"></script><script src="ficha-comment-delete-v1.js?v=20260818b"></script><script src="listening-history-delete-v2.js?v=20260818b"></script>'
-          if 'listening-history-delete-v2.js' not in s:
+          scripts = '<script src="patch-v41.js?v=20260818c"></script><script src="covers-sort-v2.js?v=20260818c"></script><script src="diary-curiosity-v3.js?v=20260818c"></script><script src="app-fixes-v4.js?v=20260818c"></script><script src="ficha-listening-v5.js?v=20260818c"></script><script src="listened-badge-v1.js?v=20260818c"></script><script src="listening-history-v1.js?v=20260818c"></script><script src="catalog-enrichment-v1.js?v=20260818c"></script><script src="ficha-comment-delete-v1.js?v=20260818c"></script><script src="listening-history-delete-v2.js?v=20260818c"></script><script src="catalog-additions-v1.js?v=20260818c"></script>'
+          if 'catalog-additions-v1.js' not in s:
               s = s.replace('</body>', scripts + '</body>')
           p.write_text(s, encoding='utf-8')
           PY
