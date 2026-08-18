@@ -1,7 +1,9 @@
 (()=>{
   'use strict';
-  const VERSION='catalog-corrections-v2';
+  const VERSION='catalog-corrections-v3';
   if(!Array.isArray(data))return;
+
+  const PAULS_COVER='https://shopus.beastieboys.com/cdn/shop/products/05099969330025_1.png?v=1599662683&width=1000';
 
   function rebuildSearch(r){
     r.search_text=[r.id,r.location,r.artist,r.title,r.format,r.type,r.year,r.genre,r.label,r.recording,r.edition,r.notes,r.support_kind,r.metadata_status].filter(Boolean).join(' ');
@@ -10,15 +12,46 @@
   function pinCover(r,url){
     if(!r||!url)return;
     r.cover_url=url;
-    try{if(typeof coverKey==='function'&&typeof coverCache==='object'){coverCache[coverKey(r)]=url;}}catch(e){}
+    let key='';
+    try{if(typeof coverKey==='function')key=coverKey(r);}catch(e){}
+    try{if(key&&typeof coverCache==='object')coverCache[key]=url;}catch(e){}
+    // Limpia/actualiza también cachés antiguas para que una portada errónea guardada
+    // anteriormente no vuelva a aparecer después de una recarga.
+    if(key){
+      [
+        'juan_music_inventory_cover_cache_v1',
+        'juan_music_inventory_cover_web_v2',
+        'juan_music_inventory_cover_web_v4'
+      ].forEach(storageKey=>{
+        try{
+          const obj=JSON.parse(localStorage.getItem(storageKey)||'{}')||{};
+          obj[key]=url;
+          localStorage.setItem(storageKey,JSON.stringify(obj));
+        }catch(e){}
+      });
+    }
   }
 
-  // Paul's Boutique: carátula oficial indicada por Juan.
+  // Paul's Boutique: portada oficial del álbum, fijada para que el buscador
+  // automático no pueda sustituirla por samplers u otras ediciones.
   const pauls=data.find(r=>r.id==='R0016');
   if(pauls){
-    pinCover(pauls,'https://beastieboys.com/wp-content/uploads/2018/12/pauls-boutique%401x.jpg');
-    pauls.notes='Carátula fijada manualmente para evitar coincidencias erróneas del buscador automático.';
+    pinCover(pauls,PAULS_COVER);
+    pauls.notes='Carátula oficial de Paul’s Boutique fijada manualmente. Se evita que el buscador automático la sustituya por samplers u otras ediciones.';
     rebuildSearch(pauls);
+  }
+
+  // Incluso si el usuario pulsa «Buscar de nuevo», conservar la portada correcta.
+  if(typeof fetchCover==='function'){
+    const fetchCoverBeforeCorrections=fetchCover;
+    fetchCover=async function(r,force=false){
+      if(r&&r.id==='R0016'){
+        pinCover(r,PAULS_COVER);
+        try{if(typeof saveCoverCache==='function')saveCoverCache();}catch(e){}
+        return PAULS_COVER;
+      }
+      return fetchCoverBeforeCorrections(r,force);
+    };
   }
 
   // R0133 estaba transcrito como “Alive”; la lectura correcta es Alice.
