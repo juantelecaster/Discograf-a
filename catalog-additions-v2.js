@@ -1,6 +1,6 @@
 (()=>{
   'use strict';
-  const VERSION='catalog-additions-v2';
+  const VERSION='catalog-additions-v2.1';
   if(!Array.isArray(data))return;
 
   const r={
@@ -14,19 +14,19 @@
     year:'1969',
     genre:'Psychedelic rock / Acid rock / Heavy psych',
     label:'Phoenix Records',
-    recording:'Único álbum de Morgen. La banda nació en Nueva York a finales de los sesenta como Morgen’s Dreame Spectrum. El disco fue grabado en 1968 y no apareció hasta diciembre de 1969 en Probe Records. Su sonido combina fuzz muy cargado, psicodelia oscura, hard rock y pasajes más oníricos, con Steve Morgen como principal compositor y vocalista.',
+    recording:'Único álbum de Morgen. El grupo se formó en Nueva York como Morgen’s Dreame Spectrum y fue uno de los primeros fichajes de Probe, subsello psicodélico de ABC. Las sesiones originales se realizaron en Studio 3, Manhattan, en 1968; el material fue remezclado en 1969 y el LP no apareció hasta diciembre de ese año. Musicalmente combina guitarras fuzz muy agresivas, psicodelia oscura, hard rock y momentos más oníricos.',
     edition:'Reedición británica en CD de Phoenix Records, 2008. Catálogo ASHCD3014, código de barras 5051125301416, presentación gatefold de cartón y edición limitada numerada de 1000 copias. Ejemplar de la colección: nº 0434/1000.',
-    notes:'La portada reproduce una versión de El grito de Edvard Munch. La edición física ha sido identificada directamente a partir de las fotografías del disco y la carpeta aportadas.',
+    notes:'Edición física identificada directamente a partir de las fotografías aportadas del disco y la carpeta. La portada reproduce The Scream (1895) de Edvard Munch.',
     confidence:'Alta',
     metadata_status:'Edición física identificada',
     support_kind:'CD comercial',
-    cover_url:'assets/morgen-morgen-phoenix-2008.jpg',
+    cover_url:'https://coverartarchive.org/release/c64ce2cc-7cfc-4cb5-aaf1-ed99c3a28d95/front-500',
     official_reference:'https://morgenband.bandcamp.com/album/morgen',
     discogs_search:'https://www.discogs.com/search/?q=Morgen+Morgen+ASHCD3014&type=release',
-    musicbrainz_search:'https://musicbrainz.org/search?query=barcode%3A5051125301416&type=release&method=indexed',
-    artist_context:'Morgen fue un grupo estadounidense de rock psicodélico surgido en Nueva York a finales de los años sesenta. La formación se articuló alrededor del cantante, guitarrista y compositor Steve Morgen. Su único LP quedó como una obra de culto del heavy psych estadounidense por la intensidad de las guitarras fuzz, la batería pesada y unas letras de imaginería psicodélica y fantástica.',
-    artist_members:'Steve Morgen — voz y guitarra · Barry Stock — guitarra · Rennie Genossa — bajo · Bob Maiman — batería · Murray Shiffrin — colaborador, guitarrista y coproductor asociado a la etapa del grupo',
-    curiosity:'El álbum se grabó en 1968 pero permaneció aproximadamente un año sin publicar y finalmente apareció en diciembre de 1969. Su portada utilizó El grito de Edvard Munch, una imagen que terminó convirtiéndose en uno de los rasgos más reconocibles de este oscuro clásico psicodélico.',
+    musicbrainz_search:'https://musicbrainz.org/release/c64ce2cc-7cfc-4cb5-aaf1-ed99c3a28d95',
+    artist_context:'Morgen fue un grupo estadounidense de heavy psych surgido en Nueva York a finales de los sesenta. El proyecto giró alrededor de Steve Morgen, cantante, guitarrista y autor de todas las canciones del álbum. Su único LP se ha convertido en una obra de culto por el choque entre letras de imaginería fantástica, una base rítmica muy pesada y guitarras saturadas que lo sitúan entre la psicodelia tardía y el hard rock naciente.',
+    artist_members:'Steve Morgen — voz y guitarra rítmica · Murray Shiffrin — guitarra solista · Barry Stock — guitarra rítmica y coros · Bobby Rizzo — bajo · Michael Ratti — batería',
+    curiosity:'El disco se grabó en 1968, pero el grupo tuvo que esperar hasta diciembre de 1969 para verlo publicado. Steve Morgen pidió expresamente utilizar The Scream (1895) de Edvard Munch en la portada; con el tiempo esa imagen terminó siendo inseparable de uno de los álbumes de culto más buscados del heavy psych estadounidense.',
     reference_tracklist:[
       {track:1,title:'Welcome To The Void',duration:'4:48'},
       {track:2,title:'Of Dreams',duration:'5:37'},
@@ -42,7 +42,7 @@
   if(!data.some(x=>x.id===r.id))data.push(r);
   try{searchIndex.set(r.id,fold(r.search_text));}catch(e){}
 
-  // Fijar la carátula fotografiada para que el buscador web no la sustituya por otra edición.
+  // Fijar la carátula de la edición Phoenix 2008 para evitar que el buscador web la sustituya.
   try{
     if(typeof coverKey==='function'&&typeof coverCache==='object'){
       coverCache[coverKey(r)]=r.cover_url;
@@ -65,7 +65,7 @@
     const detail=document.getElementById('detail');if(!detail)return;
     const artistBox=detail.querySelector('.artistContextBox');
     if(artistBox){
-      artistBox.innerHTML=`<b>🎸 Sobre el artista / grupo</b><div class="artistContextText">${escapeHTML(r.artist_context)}</div><dl class="artistContextGrid"><dt>Origen</dt><dd>Nueva York, Estados Unidos</dd><dt>Periodo</dt><dd>Finales de los años 60</dd><dt>Estilo</dt><dd>Psychedelic rock · Acid rock · Heavy psych</dd><dt>Miembros / instrumentos</dt><dd>${escapeHTML(r.artist_members)}</dd></dl>`;
+      artistBox.innerHTML=`<b>🎸 Sobre el artista / grupo</b><div class="artistContextText">${escapeHTML(r.artist_context)}</div><dl class="artistContextGrid"><dt>Origen</dt><dd>Nueva York, Estados Unidos</dd><dt>Periodo</dt><dd>1967–1969 aprox.</dd><dt>Estilo</dt><dd>Psychedelic rock · Acid rock · Heavy psych</dd><dt>Miembros / instrumentos</dt><dd>${escapeHTML(r.artist_members)}</dd></dl>`;
     }
     const curiosity=detail.querySelector('.curiosityBox .curiosityText');if(curiosity)curiosity.textContent=r.curiosity;
   };
