@@ -67,6 +67,16 @@
     };
   }
 
+  // Incorporar la nueva ubicación a los controles ya construidos por la página base.
+  const locationSelect=document.getElementById('location');
+  if(locationSelect&&![...locationSelect.options].some(o=>o.value==='Estuche 4')){
+    const opt=document.createElement('option');opt.value='Estuche 4';opt.textContent='Estuche 4';locationSelect.appendChild(opt);
+  }
+  const tabs=document.getElementById('tabs');
+  if(tabs&&![...tabs.querySelectorAll('.tab')].some(b=>b.dataset.loc==='Estuche 4')){
+    const btn=document.createElement('button');btn.className='tab';btn.dataset.loc='Estuche 4';btn.textContent='Estuche 4';tabs.appendChild(btn);
+  }
+
   // Selector de etiquetas dentro del buscador.
   const genre=document.getElementById('genre');
   let tag=document.getElementById('tag');
