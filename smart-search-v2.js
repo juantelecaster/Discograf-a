@@ -2,15 +2,16 @@
   'use strict';
   if(!Array.isArray(data)||typeof fold!=='function'||typeof render!=='function')return;
   const VERSION='smart-search-v2';
-  const norm=v=>String(v??'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[’‘]/g,"'").toLowerCase().replace(/[^a-z0-9ñ]+/g,' ').replace(/\s+/g,' ').trim();
+  const norm=v=>String(v??'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[’‘]/g,"'").toLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').replace(/\s+/g,' ').trim();
   const yearOf=v=>{const m=String(v??'').match(/(?:18|19|20)\d{2}/);return m?Number(m[0]):null;};
   const hasPhrase=(text,phrase)=>!!phrase&&(' '+text+' ').includes(' '+phrase+' ');
   const unique=list=>[...new Set(list.filter(Boolean))];
   const lexGroups=[
-    ['bajo',['bajo','bajista','bajo electrico','bass','bass guitar','electric bass','bass player','bassista']],
+    ['bajo',['bajo','bajos','bajista','bajistas','bajo electrico','bass','bass guitar','electric bass','bass player','bassista']],
     ['contrabajo',['contrabajo','contrabajista','double bass','upright bass','acoustic bass']],
-    ['saxo',['saxo','saxofon','saxophone','saxofonista','saxophonist','sax']],
+    ['saxo',['saxo','saxos','saxofon','saxophone','saxofonista','saxophonist','sax']],
     ['hammond',['hammond','organo hammond','hammond organ']],
+    ['shakuhachi',['shakuhachi','尺八','flauta japonesa','japanese flute','flauta de bambu']],
     ['organo',['organo','organ','organista','organist']],
     ['bateria',['bateria','baterista','drums','drummer','drum kit']],
     ['guitarra',['guitarra','guitar','guitarrista','guitarist']],
@@ -104,8 +105,10 @@
     raw=raw.replace(/\b([6-9]0)s\b/gi,(all,n)=>' decade19'+n+' ');
     const words=norm(raw).split(' ').filter(Boolean);
     const terms=[];
+    const stopwords=new Set(['de','del','el','la','los','las','con','en','para','ano','discos','album']);
     for(let i=0;i<words.length;){
       const word=words[i];
+      if(words.length>1&&stopwords.has(word)){i++;continue;}
       let m;
       if((m=/^range((?:18|19|20)\d{2})to((?:18|19|20)\d{2})$/.exec(word))){
         terms.push({type:'range',min:Math.min(+m[1],+m[2]),max:Math.max(+m[1],+m[2])});i++;continue;
