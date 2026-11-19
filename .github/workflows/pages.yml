@@ -25,6 +25,11 @@ jobs:
         uses: actions/checkout@v6
       - name: Configurar Pages
         uses: actions/configure-pages@v5
+      - name: Comprobar el buscador y sus filtros
+        shell: bash
+        run: |
+          node --check smart-search-v2.js
+          node tests/smart-search.test.cjs
       - name: Activar mejoras de la web
         shell: bash
         run: |
@@ -35,8 +40,8 @@ jobs:
           s = s.replace('<option value="year">Orden: año</option>', '<option value="year_asc">Año: más antiguo primero</option><option value="year_desc">Año: más reciente primero</option>')
           s = s.replace('fichas con identificación alta', 'álbumes bien identificados')
           s = s.replace('fichas que requieren revisión', 'identificación incompleta')
-          scripts = '<script src="patch-v41.js?v=20261117c"></script><script src="covers-sort-v2.js?v=20261117c"></script><script src="diary-curiosity-v3.js?v=20261117c"></script><script src="app-fixes-v4.js?v=20261117c"></script><script src="ficha-listening-v5.js?v=20261117c"></script><script src="listened-badge-v1.js?v=20261117c"></script><script src="listening-history-v1.js?v=20261117c"></script><script src="catalog-enrichment-v1.js?v=20261117c"></script><script src="ficha-comment-delete-v1.js?v=20261117c"></script><script src="listening-history-delete-v2.js?v=20261117c"></script><script src="catalog-additions-v1.js?v=20261117c"></script><script src="catalog-corrections-v2.js?v=20261117c"></script><script src="catalog-additions-v2.js?v=20261117c"></script><script src="catalog-additions-v3.js?v=20261117c"></script><script src="catalog-additions-v4.js?v=20261117c"></script><script src="artist-context-v2.js?v=20261117c"></script><script src="catalog-additions-v5.js?v=20261117c"></script><script src="catalog-additions-v6.js?v=20261117c"></script><script src="maletin4-editorial-v1.js?v=20261117c"></script><script src="catalog-additions-v7.js?v=20261119a"></script><script src="semantic-tags-v1.js?v=20261119b"></script>'
-          if 'semantic-tags-v1.js' not in s:
+          scripts = '<script src="patch-v41.js?v=20261117c"></script><script src="covers-sort-v2.js?v=20261117c"></script><script src="diary-curiosity-v3.js?v=20261117c"></script><script src="app-fixes-v4.js?v=20261117c"></script><script src="ficha-listening-v5.js?v=20261117c"></script><script src="listened-badge-v1.js?v=20261117c"></script><script src="listening-history-v1.js?v=20261117c"></script><script src="catalog-enrichment-v1.js?v=20261117c"></script><script src="ficha-comment-delete-v1.js?v=20261117c"></script><script src="listening-history-delete-v2.js?v=20261117c"></script><script src="catalog-additions-v1.js?v=20261117c"></script><script src="catalog-corrections-v2.js?v=20261117c"></script><script src="catalog-additions-v2.js?v=20261117c"></script><script src="catalog-additions-v3.js?v=20261117c"></script><script src="catalog-additions-v4.js?v=20261117c"></script><script src="artist-context-v2.js?v=20261117c"></script><script src="catalog-additions-v5.js?v=20261117c"></script><script src="catalog-additions-v6.js?v=20261117c"></script><script src="maletin4-editorial-v1.js?v=20261117c"></script><script src="catalog-additions-v7.js?v=20261119a"></script><script src="semantic-tags-v1.js?v=20261119b"></script><script src="smart-search-v2.js?v=20261119c"></script>'
+          if 'smart-search-v2.js' not in s:
               s = s.replace('</body>', scripts + '</body>')
           p.write_text(s, encoding='utf-8')
           PY
